@@ -1,7 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
-import app_weather
+
 import weather_api
 
 
@@ -9,6 +9,11 @@ import weather_api
 
 def current_weather(request) -> JsonResponse:
     if request.method == 'GET':
-        data = weather_api.current_weather(59.93, 30.31)
+        lat = request.GET.get('lat')
+        lon = request.GET.get('lon')
+        if lat and lon:
+            data = weather_api.current_weather(lat=lat, lon=lon)
+        else:
+            data = weather_api.current_weather(59.93, 30.31)
         return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
                                                      'indent': 4})
