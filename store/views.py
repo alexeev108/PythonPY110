@@ -60,9 +60,52 @@ def products_view(request) -> JsonResponse:
 
 def shop_view(request) -> HttpResponse:
     template_name = 'store/shop.html'
-    context = {"products": store.models.DATABASE.values()}
     if request.method == 'GET':
-        return render(request, template_name, context)
+        product_id = request.GET.get('id')
+        products = store.models.DATABASE.copy()
+        data_to_return = JsonResponse(products,
+                                      safe=False,
+                                      json_dumps_params=
+                                      {
+                                          'indent': 4,
+                                          'ensure_ascii': False
+                                      }
+                                      )
+        if product_id:
+            try:
+                products = products[product_id]
+                data_to_return = JsonResponse(products,
+                                              safe=False,
+                                              json_dumps_params=
+                                              {
+                                                  'indent': 4,
+                                                  'ensure_ascii': False
+                                              }
+                                              )
+            except:
+                data_to_return = HttpResponseNotFound("Данного продукта нет в базе данных")
+            return data_to_return
+
+        category_key = request.GET.get('category')
+        ordering_key = request.GET.get('ordering')
+        if ordering_key:
+            if request.GET.get('reverse') and request.GET.get('reverse').lower() == 'true':
+                data = filtering_category(store.models.DATABASE.copy(),
+                                          category_key,
+                                          ordering_key,
+                                          True
+                                          )
+            else:
+                data = filtering_category(store.models.DATABASE.copy(),
+                                          category_key,
+                                          ordering_key
+                                          )
+        else:
+            data = filtering_category(store.models.DATABASE.copy(),
+                                      category_key
+                                      )
+    context = {"products": data}
+    return render(request, template_name, context)
 
 def products_page_view(request, page) -> HttpResponse:
     if request.method == "GET":
