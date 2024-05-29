@@ -62,7 +62,7 @@
 					<a href="{% url 'store:products_page_view' product.html %}" class="img-prod">
 						<img class="img-fluid" src="{% static product.url %}" alt="Colorlib Template">
 						{% if product.discount %}
-						<span class="status">{{product.discount}}</span>
+						<span class="status">{{product.discount}}%</span>
 						{% else %}
 						<div class="overlay"></div>
 						{% endif %}
