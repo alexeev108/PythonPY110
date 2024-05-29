@@ -59,10 +59,10 @@ def products_view(request) -> JsonResponse:
                             )
 
 def shop_view(request) -> HttpResponse:
+    template_name = 'store/shop.html'
+    context = {"products": store.models.DATABASE.values()}
     if request.method == 'GET':
-        with open('store/shop.html', 'r', encoding="utf-8") as file:
-            data = file.read()
-        return HttpResponse(data)
+        return render(request, template_name, context)
 
 def products_page_view(request, page) -> HttpResponse:
     if request.method == "GET":
@@ -86,11 +86,19 @@ def products_page_view(request, page) -> HttpResponse:
 def cart_view(request) -> JsonResponse:
     if request.method == 'GET':
         data = view_in_cart()
-        return JsonResponse(data, safe=False, json_dumps_params=
-        {
-            'indent': 4, 'ensure_ascii': False
-        }
-                            )
+        template_name = 'store/cart.html'
+        json_param = request.GET.get('format')
+        if (json_param == 'JSON') and (json_param.lower() == 'json'):
+            return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
+                                                         'indent': 4})
+        else:
+            products = []
+            for product_id, quantity in data['products'].items():
+                product = store.models.DATABASE[product_id]
+                product["price_total"] = f"{quantity * product['price_after']:.2f}"
+                products.append(product)
+            context = {"products": products}
+            return render(request, template_name, context)
 
 def cart_add_view(request, id_product) -> JsonResponse:
     if request.method == 'GET':
