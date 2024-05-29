@@ -8,6 +8,7 @@ from logic.services import view_in_cart, add_to_cart, remove_from_cart_one, filt
 # Create your views here.
 
 def products_view(request) -> JsonResponse:
+    template_name = 'store/shop.html'
     if request.method == 'GET':
         product_id = request.GET.get('id')
         products = store.models.DATABASE.copy()
@@ -52,11 +53,7 @@ def products_view(request) -> JsonResponse:
             data = filtering_category(store.models.DATABASE.copy(),
                                                 category_key
                                                 )
-        return JsonResponse(data, safe=False, json_dumps_params=
-        {
-            'indent': 4, 'ensure_ascii': False
-        }
-                            )
+        return render(request, template_name, {"products": data, "category": category_key})
 
 def shop_view(request) -> HttpResponse:
     template_name = 'store/shop.html'
@@ -104,8 +101,7 @@ def shop_view(request) -> HttpResponse:
             data = filtering_category(store.models.DATABASE.copy(),
                                       category_key
                                       )
-    context = {"products": data}
-    return render(request, template_name, context)
+    return render(request, template_name, {"products": data, "category": category_key})
 
 def products_page_view(request, page) -> HttpResponse:
     if request.method == "GET":
