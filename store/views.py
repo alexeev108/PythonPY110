@@ -108,6 +108,7 @@ def same_product(dict_):
     for item_ in store.models.DATABASE.copy().values():
         if (dict_['category'] == item_['category']) and (dict_['html'] != item_['html']):
             empty.append(item_)
+            # new_empty = empty[:5] #вернуть, если хочется выставить ограничение из 5 продуктов
     return empty
 
 def products_page_view(request, page) -> HttpResponse:
