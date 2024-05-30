@@ -103,20 +103,29 @@ def shop_view(request) -> HttpResponse:
                                       )
     return render(request, template_name, {"products": data, "category": category_key})
 
+def same_product(dict_):
+    empty = []
+    for item_ in store.models.DATABASE.copy().values():
+        if (dict_['category'] == item_['category']) and (dict_['html'] != item_['html']):
+            empty.append(item_)
+    return empty
+
 def products_page_view(request, page) -> HttpResponse:
     template_name = 'store/product.html'
     if request.method == "GET":
         if isinstance(page, str):
             for data in store.models.DATABASE.copy().values():
                 if data['html'] == page:  # Если значение переданного параметра совпадает именем html файла
-                    data_to_return = render(request, template_name, {"product": data})
+                    other = same_product(data)
+                    data_to_return = render(request, template_name, {"product": data, "same": other})
                     break
                 else:
                     data_to_return = HttpResponse('Страница не найдена!', status=404)
         elif isinstance(page, int):
             data = store.models.DATABASE.copy().get(str(page))
             if data:
-                data_to_return = render(request, template_name, {"product": data})
+                other = same_product(data)
+                data_to_return = render(request, template_name, {"product": data, "same": other})
             else:
                 data_to_return = HttpResponse('Страница не найдена!', status=404)
         return data_to_return
