@@ -134,7 +134,6 @@ def products_page_view(request, page) -> HttpResponse:
 def cart_view(request) -> JsonResponse:
     if request.method == 'GET':
         data = view_in_cart()
-        template_name = 'store/cart.html'
         json_param = request.GET.get('format')
         if (json_param == 'JSON') and (json_param.lower() == 'json'):
             return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
@@ -143,10 +142,11 @@ def cart_view(request) -> JsonResponse:
             products = []
             for product_id, quantity in data['products'].items():
                 product = store.models.DATABASE[product_id]
+                product["quantity"] = quantity
                 product["price_total"] = f"{quantity * product['price_after']:.2f}"
                 products.append(product)
             context = {"products": products}
-            return render(request, template_name, context)
+            return render(request, 'store/cart.html', context)
 
 def cart_add_view(request, id_product) -> JsonResponse:
     if request.method == 'GET':

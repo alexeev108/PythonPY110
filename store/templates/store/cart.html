@@ -52,8 +52,7 @@
 								<input type="number" name="quantity" class="quantity form-control input-number" value={{product.quantity}} min="1" max="100">
 							</div>
 						  </td>
-
-							<td class="total">{{product.price_total}}</td>
+								<td class="total">{{product.price_total}}</td>
 						  </tr><!-- END TR-->
 						{% endfor %}
 						</tbody>
@@ -100,10 +99,10 @@
 			</div>
 			<div class="col-lg-4 mt-5 cart-wrap ftco-animate">
 				<div class="cart-total mb-3">
-					<h3>Стоимость покупку</h3>
+					<h3>Стоимость покупки</h3>
 					<p class="d-flex">
 						<span>Промежуточный итог</span>
-						&#x20bd  <span id="subtotal-value">710.00</span>
+						&#x20bd  <span id="subtotal-value">0</span>
 					</p>
 					<p class="d-flex">
 						<span>Доставка</span>
@@ -127,7 +126,7 @@
 {% endblock %}
 
 
-{% block scripts %} <!-- Блок для загрузки дополнительного кода, встроенного в html-->
+{% block custom_scripts %} <!-- Блок для загрузки дополнительного кода, встроенного в html-->
 <script>
 	// Получаем элементы с значениями
 	let subtotalElement = document.getElementById('subtotal-value');
