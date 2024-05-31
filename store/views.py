@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect
 
@@ -133,7 +134,8 @@ def products_page_view(request, page) -> HttpResponse:
 
 def cart_view(request) -> JsonResponse:
     if request.method == 'GET':
-        data = view_in_cart()
+        current_user = get_user(request).username
+        data = view_in_cart(request)[current_user]
         json_param = request.GET.get('format')
         if (json_param == 'JSON') and (json_param.lower() == 'json'):
             return JsonResponse(data, json_dumps_params={'ensure_ascii': False,
@@ -150,7 +152,7 @@ def cart_view(request) -> JsonResponse:
 
 def cart_add_view(request, id_product) -> JsonResponse:
     if request.method == 'GET':
-        result = add_to_cart(id_product)
+        result = add_to_cart(request, id_product)
         if result:
             return JsonResponse(
                 {"answer": "Продукт успешно добавлен в корзину"},
@@ -165,7 +167,7 @@ def cart_add_view(request, id_product) -> JsonResponse:
 
 def cart_del_all_view(request, id_product):
     if request.method == "GET":
-        result = remove_from_cart_all(id_product)
+        result = remove_from_cart_all(request, id_product)
         if result:
             return JsonResponse({"answer": "Продукт успешно удалён из корзины"},
                                 json_dumps_params={'ensure_ascii': False})
@@ -177,7 +179,7 @@ def cart_del_all_view(request, id_product):
 
 def cart_del_one_view(request, id_product):
     if request.method == "GET":
-        result = remove_from_cart_one(id_product)
+        result = remove_from_cart_one(request, id_product)
         if result:
             return JsonResponse({"answer": "1 позиция продукта успешно удалена из корзины"},
                                 json_dumps_params={'ensure_ascii': False})
@@ -237,7 +239,7 @@ def delivery_estimate_view(request):
 
 def cart_buy_now_view(request, id_product):
     if request.method == "GET":
-        result = add_to_cart(id_product)
+        result = add_to_cart(request, id_product)
         if result:
             return redirect("store:cart_page_view")
 
@@ -245,7 +247,7 @@ def cart_buy_now_view(request, id_product):
 
 def cart_remove_view(request, id_product):
     if request.method == "GET":
-        result = remove_from_cart_all(id_product)
+        result = remove_from_cart_all(request, id_product)
         if result:
             return redirect("store:cart_page_view")
 

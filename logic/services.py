@@ -1,6 +1,7 @@
 import json
 import os
 
+from django.contrib.auth import get_user
 from django.http import HttpResponseNotFound
 
 import store.models
@@ -37,16 +38,17 @@ def filtering_category(database: dict[str, dict],
         # Вспомните как можно сортировать по значениям словаря при помощи lambda функции
     return result
 
-def view_in_cart() -> dict:
+def view_in_cart(request) -> dict:
     if os.path.exists('cart.json'):
         with open('cart.json', 'r', encoding='utf-8') as f:
             return json.load(f)
-    cart = {'products': {}}
+    user = get_user(request).username
+    cart = {user: {'products': {}}}
     with open('cart.json', 'x',  encoding='utf-8') as f:
         json.dump(cart, f)
     return cart
 
-def add_to_cart(id_product: str) -> bool:
+def add_to_cart(request, id_product: str) -> bool:
     """
     Добавляет продукт в корзину. Если в корзине нет данного продукта, то добавляет его с количеством равное 1.
     Если в корзине есть такой продукт, то добавляет количеству данного продукта + 1.
@@ -55,7 +57,8 @@ def add_to_cart(id_product: str) -> bool:
     :return: Возвращает True в случае успешного добавления, а False в случае неуспешного добавления(товара по id_product
     не существует).
     """
-    cart = view_in_cart()
+    cart_users = view_in_cart(request)
+    cart = cart_users[get_user(request).username]
     products = store.models.DATABASE.copy()
     int_list = [int(item) for item in list(cart['products'].keys())]
     int_list_store = [int(item) for item in list(products.keys())]
@@ -78,12 +81,12 @@ def add_to_cart(id_product: str) -> bool:
                         cart['products'][id_product] = new
 
         with open('cart.json', 'w', encoding='utf-8') as f:
-            json.dump(cart, f)
+            json.dump(cart_users, f)
             result_bool = True
 
     return result_bool
 
-def remove_from_cart_all(id_product: str) -> bool:
+def remove_from_cart_all(request, id_product: str) -> bool:
     """
     Удаляет позицию продукта из корзины. Если в корзине есть такой продукт, то удаляется ключ в словаре
     с этим продуктом.
@@ -92,7 +95,8 @@ def remove_from_cart_all(id_product: str) -> bool:
     :return: Возвращает True в случае успешного удаления, а False в случае неуспешного удаления(товара по id_product
     не существует).
     """
-    cart = view_in_cart()
+    cart_users = view_in_cart(request)
+    cart = cart_users[get_user(request).username]
     products = store.models.DATABASE.copy()
     int_list = [int(item) for item in list(cart['products'].keys())]
     int_list_store = [int(item) for item in list(products.keys())]
@@ -107,12 +111,12 @@ def remove_from_cart_all(id_product: str) -> bool:
                 cart['products'].pop(id_product)
 
         with open('cart.json', 'w', encoding='utf-8') as f:
-            json.dump(cart, f)
+            json.dump(cart_users, f)
             result_bool = True
 
     return result_bool
 
-def remove_from_cart_one(id_product: str) -> bool:
+def remove_from_cart_one(request, id_product: str) -> bool:
     """
     Удаляет продукт из корзины.
     Если в корзине есть такой продукт, то уменьшает количество данного продукта - 1.
@@ -122,7 +126,8 @@ def remove_from_cart_one(id_product: str) -> bool:
     :return: Возвращает True в случае успешного удаления, а False в случае неуспешного удаления(товара по id_product
     не существует).
     """
-    cart = view_in_cart()
+    cart_users = view_in_cart(request)
+    cart = cart_users[get_user(request).username]
     products = store.models.DATABASE.copy()
     int_list = [int(item) for item in list(cart['products'].keys())]
     int_list_store = [int(item) for item in list(products.keys())]
@@ -141,12 +146,25 @@ def remove_from_cart_one(id_product: str) -> bool:
                     cart['products'][id_product] = new
 
         with open('cart.json', 'w', encoding='utf-8') as f:
-            json.dump(cart, f)
+            json.dump(cart_users, f)
             result_bool = True
 
     return result_bool
 
+def add_user_to_cart(request, username: str) -> None:
+    """
+       Добавляет пользователя в базу данных корзины, если его там не было.
 
+       :param username: Имя пользователя
+       :return: None
+       """
+    cart_users = view_in_cart(request)
+    cart = cart_users.get(username)
+
+    if not cart:
+        with open('cart.json', mode='w', encoding='utf-8') as f:
+            cart_users[username] = {'products': {}}
+            json.dump(cart_users, f)
 
 # if __name__ == "__main__":
 #     # Проверка работоспособности функций view_in_cart, add_to_cart, remove_from_cart
