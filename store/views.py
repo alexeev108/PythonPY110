@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect
 
@@ -132,6 +133,7 @@ def products_page_view(request, page) -> HttpResponse:
                 data_to_return = HttpResponse('Страница не найдена!', status=404)
         return data_to_return
 
+@login_required(login_url='login:login_view')
 def cart_view(request) -> JsonResponse:
     if request.method == 'GET':
         current_user = get_user(request).username
@@ -150,6 +152,7 @@ def cart_view(request) -> JsonResponse:
             context = {"products": products}
             return render(request, 'store/cart.html', context)
 
+@login_required(login_url='login:login_view')
 def cart_add_view(request, id_product) -> JsonResponse:
     if request.method == 'GET':
         result = add_to_cart(request, id_product)
@@ -237,6 +240,7 @@ def delivery_estimate_view(request):
         else:
             return HttpResponseNotFound("Неверные данные")
 
+@login_required(login_url='login:login_view')
 def cart_buy_now_view(request, id_product):
     if request.method == "GET":
         result = add_to_cart(request, id_product)
