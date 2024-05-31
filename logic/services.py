@@ -24,18 +24,12 @@ def filtering_category(database: dict[str, dict],
     то возвращается пустой список
     """
     if category_key is not None:
-        result = [product for product in store.models.DATABASE.copy().values() if product["category"] == category_key]  # TODO При помощи фильтрации в list comprehension профильтруйте товары по категории (ключ 'category') в продукте database. Или можете использовать
-        # обычный цикл или функцию filter. Допустим фильтрацию в list comprehension можно сделать по следующему шаблону
-        # [product for product in database.values() if ...] подумать, что за фильтрующее условие можно применить.
-        # Сравните значение категории продукта со значением category_key
+        result = [product for product in store.models.DATABASE.copy().values() if product["category"] == category_key]
+
     else:
-        result = list(store.models.DATABASE.copy().values())  # TODO Трансформируйте словарь словарей database в список словарей
-        # В итоге должен быть [dict, dict, dict, ...], где dict - словарь продукта из database
+        result = list(store.models.DATABASE.copy().values())
     if ordering_key is not None:
-        result.sort(key=lambda p: p[ordering_key], reverse=reverse)  # TODO Проведите сортировку result по ordering_key и параметру reverse
-        # Так как result будет списком, то можно применить метод sort, но нужно определиться с тем по какому элементу сортируем и в каком направлении
-        # result.sort(key=lambda ..., reverse=reverse)
-        # Вспомните как можно сортировать по значениям словаря при помощи lambda функции
+        result.sort(key=lambda p: p[ordering_key], reverse=reverse)
     return result
 
 def view_in_cart(request) -> dict:
