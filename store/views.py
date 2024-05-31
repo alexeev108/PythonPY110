@@ -1,5 +1,5 @@
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 import store.models
 from logic.services import view_in_cart, add_to_cart, remove_from_cart_one, filtering_category, remove_from_cart_all
@@ -234,3 +234,19 @@ def delivery_estimate_view(request):
                 return HttpResponseNotFound("Неверные данные")
         else:
             return HttpResponseNotFound("Неверные данные")
+
+def cart_buy_now_view(request, id_product):
+    if request.method == "GET":
+        result = add_to_cart(id_product)
+        if result:
+            return redirect("store:cart_page_view")
+
+        return HttpResponseNotFound("Неудачное добавление в корзину")
+
+def cart_remove_view(request, id_product):
+    if request.method == "GET":
+        result = remove_from_cart_all(id_product)
+        if result:
+            return redirect("store:cart_page_view")
+
+        return HttpResponseNotFound("Неудачное удаление из корзины")
