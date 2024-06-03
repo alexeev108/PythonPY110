@@ -7,6 +7,7 @@ from django.http import HttpResponseNotFound
 import store.models
 
 
+
 def filtering_category(database: dict[str, dict],
                        category_key: [None, str] = None,
                        ordering_key: [None, str] = None,
@@ -160,6 +161,93 @@ def add_user_to_cart(request, username: str) -> None:
             cart_users[username] = {'products': {}}
             json.dump(cart_users, f)
 
+#Далее представлены функции для работы с Избранным
+
+def view_in_wishlist(request) -> dict:
+    if os.path.exists('wishlist.json'):
+        with open('wishlist.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    user = get_user(request).username
+    wishlist = {user: {'products': []}}
+    with open('wishlist.json', 'x',  encoding='utf-8') as f:
+        json.dump(wishlist, f)
+    return wishlist
+
+def add_to_wishlist(request, id_product: str) -> bool:
+    """
+    Добавляет продукт в избранное. Если в избранном нет данного продукта, то добавляет его.
+    Если в корзине есть такой продукт, то добавляет количеству данного продукта + 1.
+
+    :param id_product: Идентификационный номер продукта в виде строки.
+    :return: Возвращает True в случае успешного добавления, а False в случае неуспешного добавления(товара по id_product
+    не существует).
+    """
+    wishlist_users = view_in_wishlist(request)
+    wishlist = wishlist_users[get_user(request).username]
+    products = store.models.DATABASE.copy()
+    int_list = [int(item) for item in wishlist['products']]
+    int_list_store = [int(item) for item in list(products.keys())]
+
+    if int(id_product) not in int_list_store:
+        result_bool = False
+    else:
+        if len(wishlist['products']) == 0:
+            wishlist['products'].append(id_product)
+        else:
+            if int(id_product) not in int_list:
+                wishlist['products'].append(id_product)
+
+
+        with open('wishlist.json', 'w', encoding='utf-8') as f:
+            json.dump(wishlist_users, f)
+            result_bool = True
+
+    return result_bool
+
+def remove_from_wishlist_all(request, id_product: str) -> bool:
+    """
+    Удаляет позицию продукта из корзины. Если в корзине есть такой продукт, то удаляется ключ в словаре
+    с этим продуктом.
+
+    :param id_product: Идентификационный номер продукта в виде строки.
+    :return: Возвращает True в случае успешного удаления, а False в случае неуспешного удаления(товара по id_product
+    не существует).
+    """
+    wishlist_users = view_in_wishlist(request)
+    wishlist = wishlist_users[get_user(request).username]
+    products = store.models.DATABASE.copy()
+    int_list = [int(item) for item in wishlist['products']]
+    int_list_store = [int(item) for item in list(products.keys())]
+
+    if ((int(id_product) not in int_list_store) or
+            (len(wishlist['products']) == 0) or
+            (int(id_product) not in int_list)):
+        result_bool = False
+    else:
+        for keys in wishlist['products']:
+            if int(keys) == int(id_product):
+                wishlist['products'].remove(id_product)
+
+        with open('wishlist.json', 'w', encoding='utf-8') as f:
+            json.dump(wishlist_users, f)
+            result_bool = True
+
+    return result_bool
+
+def add_user_to_wishlist(request, username: str) -> None:
+    """
+       Добавляет пользователя в базу данных корзины, если его там не было.
+
+       :param username: Имя пользователя
+       :return: None
+       """
+    wishlist_users = view_in_wishlist(request)
+    wishlist = wishlist_users.get(username)
+
+    if not wishlist:
+        with open('wishlist.json', mode='w', encoding='utf-8') as f:
+            wishlist_users[username] = {'products': []}
+            json.dump(wishlist_users, f)
 # if __name__ == "__main__":
 #     # Проверка работоспособности функций view_in_cart, add_to_cart, remove_from_cart
 #     # Для совпадения выходных значений перед запуском скрипта удаляйте появляющийся файл 'cart.json' в папке
